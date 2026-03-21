@@ -1,0 +1,12 @@
+/csv/
+/ppt/
+/.venv
+/venv
+/run.cmd
+/build
+/dist/csv
+/dist/ppt
+/modules/__pycache__/
+/dist/ugeto/
+/modules/__pycache__/
+ugeto.spec
