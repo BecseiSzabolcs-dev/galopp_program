@@ -1,6 +1,6 @@
-# 🐎Ügető program
+# 🐎Galopp program
 
-Ez a Python alkalmazás egy grafikus felhasználói felülettel (GUI) rendelkező eszköz, amelyet a Ügető hivatalos PDF-programjainak feldolgozására, a kivonatolt adatok szerkesztésére, valamint CSV fájlok és PowerPoint prezentációk generálására terveztem.
+Ez a Python alkalmazás egy grafikus felhasználói felülettel (GUI) rendelkező eszköz, amelyet a Galopp hivatalos PDF-programjainak feldolgozására, a kivonatolt adatok szerkesztésére, valamint CSV fájlok és PowerPoint prezentációk generálására terveztem.
 
 ⚙️ Funkciók és Képességek
 PDF Betöltése: Képes betölteni egy PDF fájlt, és automatikusan kivonatolni belőle a versennyel kapcsolatos adatokat (pl. futamok címei, lovasok/hajtók, lovak, időpontok, vélemények).
