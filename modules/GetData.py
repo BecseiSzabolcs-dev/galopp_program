@@ -9,16 +9,19 @@ class Futam:
     def __init__(self,line=""):
         if line!="":
             try:
-                id, daily, title, dist, time, start, opinion = line.strip().split(";")
+                id, daily, title, dist, time, track, opinion = line.strip().split(";")
             except:
-                id, daily, title, dist, time, start = line.strip().split(";")
+                id, daily, title, dist, time, track = line.strip().split(";")
             self.id      = id
             self.daily   = daily
             self.title   = title
             self.dist    = dist
             self.time    = time
             self.track   = track
-            self.start   = start
+            try:
+                self.start = start
+            except:
+                self.start = ""
             try:
                 self.opinion = opinion
             except:
@@ -53,8 +56,8 @@ class Futam:
         self.title = data["Title"]
         self.dist = data["Distance"]
         self.time = data["Start time"]
-        self.track = data["track"]
-        self.start =  data["Start type"]
+        self.track = data["Track"]
+        #self.start =  data["Start type"]
         self.opinion =  data["Opinion"]
         return self
 
@@ -88,8 +91,10 @@ class Horses:
             self.isRun      = "0"
 
     def load_json(self,data,Fnum):
+        rm_list = ['CZE', 'FR', 'GB', 'GER', 'IRE', 'SRB', 'SVK', 'SWE']
+
         self.Hnum   = data['number']
-        self.Hname  = data['name']
+        self.Hname = " ".join([w for w in data['name'].split() if w.strip('()') not in rm_list]).strip()
         #self.dist   = data['distance']
         self.weight = float(data['weight'])
         self.allowance = float(data['allowance'])
@@ -108,7 +113,7 @@ class Horses:
         #self.rweight = self.weight - self.allowance
         self.DJname = data['Jockey name']
         self.Fnum   = data['Futam id']
-        self.isRun  = data['Run']
+        self.isRun  = data['IsRun']
         return self
 
     def __str__(self):
@@ -174,8 +179,9 @@ class GetData:
 
             race_name = race.get('race_name', 'N/A')
             if race_name != 'N/A':
-                line = race_name.split(" ")
+                line = race_name.split()
                 line = self.part_join(line,"(",")")
+                 
 
 
                 for i in range(0,10):
@@ -184,6 +190,7 @@ class GetData:
                     line = [data for data in line if data != f"({self.rome_num[i]}.kat.)"                    ]
                     line = [data for data in line if data != f"({self.rome_num[i]}. kat.)"                   ]
                     line = [data for data in line if data != f"(Elit kat.)"                                  ]
+                    line = [data for data in line if data != f"(Elit o.)"                                    ]
                     line = [data for data in line if data != f"({self.rome_num[i]}/b.)"                      ]
                     line = [data for data in line if data != f"({self.rome_num[i]}.kat.)(szintetikus pálya)" ]
                     line = [data for data in line if data != f"(szintetikus pálya)"                          ]

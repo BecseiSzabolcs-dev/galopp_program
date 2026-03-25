@@ -270,36 +270,50 @@ class MainWindow(QMainWindow):
 
     def save_csv(self,mainWindow):
         # Ensure directories exist
-        CSV_DIR.mkdir(exist_ok=True)
-        if not self.titles_widget.to_list_of_dicts() and not self.jockeys_widget.to_list_of_dicts():
-            self.load_pdf(mainWindow)
+        try:
+            CSV_DIR.mkdir(exist_ok=True)
+            if not self.titles_widget.to_list_of_dicts() and not self.jockeys_widget.to_list_of_dicts():
+                self.load_pdf(mainWindow)
 
-        titles = self.titles_widget.to_list_of_dicts()
-        jockeys = self.jockeys_widget.to_list_of_dicts()
-        self.titles = []
-        self.jockeys = []
+            titles = self.titles_widget.to_list_of_dicts()
+            jockeys = self.jockeys_widget.to_list_of_dicts()
 
-        for ln in jockeys: 
-            driver = Horses()
-            self.jockeys.append(driver.load_dict(ln))
 
-        
-        for ln in titles: 
-            title = Futam()
-            self.titles.append(title.load_dict(ln))
-        
-        title_header = ";".join(self.titles_header)+"\n"
-        driver_header = ";".join(self.jockeys_header)+"\n"
 
-        with open("./csv/titles_data.csv",'w',encoding="utf-8") as f:
-            f.write(title_header)
-            for ln in self.titles:
-                f.write(str(ln)+"\n")
+            if not (titles and jockeys):
+                raise ValueError("The titles or jockeys tables are empty")
 
-        with open("./csv/jockeys_data.csv",'w',encoding="utf-8") as f:
-            f.write(driver_header)
-            for ln in self.jockeys:
-                f.write(str(ln)+"\n")
+            self.titles = []
+            self.jockeys = []
+
+            for ln in jockeys: 
+                driver = Horses()
+                self.jockeys.append(driver.load_dict(ln))
+
+            
+            for ln in titles: 
+                title = Futam()
+                self.titles.append(title.load_dict(ln))
+            
+            title_header = ";".join(self.titles_header)+"\n"
+            driver_header = ";".join(self.jockeys_header)+"\n"
+
+            with open("./csv/titles_data.csv",'w',encoding="utf-8") as f:
+                f.write(title_header)
+                for ln in self.titles:
+                    f.write(str(ln)+"\n")
+
+            with open("./csv/jockeys_data.csv",'w',encoding="utf-8") as f:
+                f.write(driver_header)
+                for ln in self.jockeys:
+                    f.write(str(ln)+"\n")
+
+            print("CSV file created successfully")
+
+        except (ValueError, TypeError) as e:
+            print("Somthing went wrong when tried to create CSV file!")
+            print(f"Error {e}")
+
         
 
     def make_ppt(self,mainWindow):
