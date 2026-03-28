@@ -4,8 +4,7 @@
 /venv
 /run.cmd
 /build
-/dist/csv
-/dist/ppt
+/dist/
 /modules/__pycache__/
 /dist/ugeto/
 /modules/__pycache__/
