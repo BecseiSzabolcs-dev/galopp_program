@@ -5,7 +5,7 @@ a = Analysis(
     ['gallop.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=['clock.jpg','.'],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
