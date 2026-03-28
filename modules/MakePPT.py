@@ -1,6 +1,8 @@
 #import xlwings as wx
 
 import os
+import io
+import cv2
 from pptx import Presentation
 from pptx.util import Inches,Pt
 from pptx.dml.color import RGBColor
@@ -16,7 +18,7 @@ except:
 
 
 class MakePPT:
-    def __init__(self,jockeys,titles):
+    def __init__(self,jockeys,titles,addons=[]):
         self.rome_num = ["I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII","XIII","XIV"]
         self.titles = titles
         self.jockeys = jockeys
@@ -50,17 +52,63 @@ class MakePPT:
 
             self.slide5(ppt,slide_layout)
 
+            if addons:
+                for addon in addons: 
+                    self.addon_slide(ppt,slide_layout,addon)
+
+
             file_name = ""
             file_name =f"./ppt/{title.daily}. futam.pptx"
             
             
-            for slide in ppt.slides:
+            for i, slide in enumerate(ppt.slides):
                 self.set_duration(slide,15)
 
             self.enable_looping(ppt)
             ppt.save(file_name)
 
             print(f"{file_name} created!")
+
+    def addon_slide(self,ppt,slide_layout,addon):
+        addonsl = ppt.slides.add_slide(slide_layout)
+        #self.set_slide_duration(slide1, 5) 
+        #slide1.slide_show.transition.duration = 50
+        addonbc = addonsl.background.fill
+        addonbc.solid()
+        addonbc.fore_color.rgb = RGBColor(0, 0, 0)
+
+        if addon and addon.get_type() == "video":
+            left = Inches(0)
+            top = Inches(0)
+            width = Inches(10)
+            height = Inches(7.5)
+
+            cap = cv2.VideoCapture(addon.path)
+            success, frame = cap.read()
+            cap.release()
+
+            poster_stream = None
+            if success:
+                # 2. Convert the image array to a JPEG format in RAM
+                is_success, buffer = cv2.imencode(".jpg", frame)
+                if is_success:
+                    # 3. Wrap the bytes into a file-like object
+                    poster_stream = io.BytesIO(buffer)
+# Add the video
+            movie = addonsl.shapes.add_movie(
+                addon.path, 
+                left, top, width, height, 
+                poster_frame_image=poster_stream,
+                mime_type=addon.type
+            )
+        elif addon and addon.get_type() == "image":
+            left = Inches(1)
+            top = Inches(1)
+            height = Inches(4.5)
+            pic = addonsl.shapes.add_picture(addon.path, left, top, height=height)
+
+
+
 
 
         

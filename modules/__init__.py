@@ -1,3 +1,4 @@
 from .GetData import GetData, Horses, Futam
 from .ReadPDF import ReadPDF
-from .makePPT import MakePPT
+from .MakePPT import MakePPT
+from .AddonSel import AddonSel, Addon

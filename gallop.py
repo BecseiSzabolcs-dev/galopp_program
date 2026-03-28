@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-ugeto_ui.py
+gallop.py
 PyQt6 GUI for the Ügető program (titles + jockeys editing, load PDF placeholder, save CSV, make PPT)
 
 Dependencies:
@@ -174,36 +174,86 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Gallop program")
         self.resize(1100, 700)
 
+        self.titles: list = []
+        self.jockeys: list = []
+        self.addons: list = []
+
         # Toolbar
         toolbar = QToolBar()
         self.addToolBar(toolbar)
-
+        
+        # Load PDF
         load_pdf_act = QAction("Load PDF", self)
         load_pdf_act.setShortcut(QKeySequence("Ctrl+O"))
         load_pdf_act.triggered.connect(lambda: self.load_pdf(self))
-
+        
+        # Save to csv
         save_csv_act = QAction("Save Data to CSV", self)
         save_csv_act.setShortcut(QKeySequence("Ctrl+S"))
         save_csv_act.triggered.connect(lambda: self.save_csv(self))
 
+        # Load previus CSV
+        load_prev_act = QAction("Load previus data", self)
+        load_prev_act.setShortcut(QKeySequence("Ctrl+T"))
+        load_prev_act.triggered.connect(lambda: self.Load_previus(self))
+        
+        # Add Plus content for Powerpoints
+        add_addon_act = QAction("Add Addon",self)
+        add_addon_act.triggered.connect(lambda: self.Add_addon(self))
+        add_addon_act.setShortcut(QKeySequence("A"))
+
+        # create Porwerpoints
         make_ppt_act = QAction("Make PPT", self)
         make_ppt_act.triggered.connect(lambda: self.make_ppt(self))
+        make_ppt_act.setShortcut(QKeySequence("M"))
+        
 
+        # Load toolbar buttons
         toolbar.addAction(load_pdf_act)
         toolbar.addAction(save_csv_act)
+        toolbar.addAction(load_prev_act)
+        toolbar.addAction(add_addon_act)
         toolbar.addAction(make_ppt_act)
 
         # Tabs for Titles and jockeys
         self.tabs = QTabWidget()
 
         self.titles_header  = ["Id","Daily", "Title", "Distance", "Start time", "Track", "Opinion"]
-        self.jockeys_header = ['Start number', 'Horse name', 'Jockey name', 'Weight', 'Allowance', 'Futam id', 'IsRun'] #["Start number", "Horse name", "Distance", "Driver name", "Futam id", "Run"]
+        self.titles_columns = [
+            ("Id", "id"),
+            ("Daily", "daily"),
+            ("Title", "title"),
+            ("Distance", "dist"),
+            ("Start time", "time"),
+            ("Track", "track"),
+            ("Opinion", "opinion")
+        ]
+        self.jockeys_header = ['Start number', 'Horse name', 'Jockey name', 'Weight', 'Allowance', 'Futam id', 'IsRun'] #["Start number", "Horse name", "Distance", "jockey name", "Futam id", "Run"]        
+        self.jockeys_columns = [
+            ("Start number", "Hnum"),
+            ("Horse name", "Hname"),
+            ("Jockey name", "DJname"),
+            ("Weight","weight"),
+            ("Allowance","allowance"),
+            ("Futam id", "Fnum"),
+            ("IsRun", "isRun")
+        ]
+
+        self.addons_header  = ['Id','Name','Type',"Path"]
+        self.addons_columns = [
+            ("Id","id"),
+            ("Name","name"),
+            ("Type","type"),
+            ("Path","path")
+        ]
 
         self.titles_widget  = EditableTable(self.titles_header)
         self.jockeys_widget = EditableTable(self.jockeys_header)
+        self.addons_widget  = EditableTable(self.addons_header)
 
         self.tabs.addTab(self.titles_widget, "Titles")
         self.tabs.addTab(self.jockeys_widget, "Jockeys")
+        self.tabs.addTab(self.addons_widget,"Addons")
 
         # Central layout
         central = QWidget()
@@ -222,7 +272,7 @@ class MainWindow(QMainWindow):
         self.table_widgets = [self.titles_widget.table, self.jockeys_widget.table]
 
     def load_pdf(self,mainWindow):
-        path, _ = QFileDialog.getOpenFileName(self, "Open PDF", "", "PDF files (*.pdf);;All files (*)")
+        path, _ = QFileDialog.getOpenFileName(self, "Open PDF", str(Path.home() / "Downloads"), "PDF files (*.pdf);;All files (*)")
         if not path:
             return
         self.status.showMessage(f"Betöltött PDF: {path}")
@@ -236,26 +286,6 @@ class MainWindow(QMainWindow):
             print(jockey.__dict__())
         """
 
-        self.titles_columns = [
-            ("Id", "id"),
-            ("Daily", "daily"),
-            ("Title", "title"),
-            ("Distance", "dist"),
-            ("Start time", "time"),
-            ("Track", "track"),
-            ("Opinion", "opinion")
-        ]
-        
-        self.jockeys_columns = [
-            ("Start number", "Hnum"),
-            ("Horse name", "Hname"),
-            ("Jockey name", "DJname"),
-            ("Weight","weight"),
-            ("Allowance","allowance"),
-            ("Futam id", "Fnum"),
-            ("IsRun", "isRun")
-        ]
-        
         #load_from_list_of_obj
         self.titles_widget.load_from_objects(self.titles,self.titles_columns)
         #load_from_list_of_obj
@@ -275,28 +305,37 @@ class MainWindow(QMainWindow):
             if not self.titles_widget.to_list_of_dicts() and not self.jockeys_widget.to_list_of_dicts():
                 self.load_pdf(mainWindow)
 
-            titles = self.titles_widget.to_list_of_dicts()
+            titles  = self.titles_widget.to_list_of_dicts()
             jockeys = self.jockeys_widget.to_list_of_dicts()
-
+            addons  = self.addons_widget.to_list_of_dicts()
 
 
             if not (titles and jockeys):
                 raise ValueError("The titles or jockeys tables are empty")
 
-            self.titles = []
+
+            self.addons  = []
+            self.titles  = []
             self.jockeys = []
 
             for ln in jockeys: 
-                driver = Horses()
-                self.jockeys.append(driver.load_dict(ln))
+                jockey = Horses()
+                self.jockeys.append(jockey.load_dict(ln))
 
             
             for ln in titles: 
                 title = Futam()
                 self.titles.append(title.load_dict(ln))
+
+            for ln in addons: 
+                print(ln)
+                self.addons.append(Addon(ln))
+
             
             title_header = ";".join(self.titles_header)+"\n"
-            driver_header = ";".join(self.jockeys_header)+"\n"
+            jockey_header = ";".join(self.jockeys_header)+"\n"
+
+            addons_header = ";".join(self.addons_header)+"\n"
 
             with open("./csv/titles_data.csv",'w',encoding="utf-8") as f:
                 f.write(title_header)
@@ -304,11 +343,18 @@ class MainWindow(QMainWindow):
                     f.write(str(ln)+"\n")
 
             with open("./csv/jockeys_data.csv",'w',encoding="utf-8") as f:
-                f.write(driver_header)
+                f.write(jockey_header)
                 for ln in self.jockeys:
                     f.write(str(ln)+"\n")
+            if addons!= []:
+                with open("./csv/addons_data.csv",'w',encoding="utf-8") as f:
+                    f.write(addons_header)
+                    for ln in self.addons:
+                        f.write(str(ln)+"\n")
 
-            print("CSV file created successfully")
+
+            QMessageBox.information(self, "CSV fájlok", "A CSV fájlok lementése kész")
+
 
         except (ValueError, TypeError) as e:
             print("Somthing went wrong when tried to create CSV file!")
@@ -318,54 +364,166 @@ class MainWindow(QMainWindow):
 
     def make_ppt(self,mainWindow):
         PPT_DIR.mkdir(exist_ok=True)
-        
-        if not self.titles_widget.to_list_of_dicts() and not self.jockeys_widget.to_list_of_dicts() and os.path.exists("./csv/jockeys_data.csv") and os.path.exists("./csv/titles_data.csv"):
-            titles = []
-            jockeys = []
+        try:
+            if(self.titles_widget.to_list_of_dicts() and self.jockeys_widget.to_list_of_dicts()):
+                titles = self.titles_widget.to_list_of_dicts()
+                jockeys = self.jockeys_widget.to_list_of_dicts()
+                addons = self.addons_widget.to_list_of_dicts()
+                self.titles = []
+                self.jockeys = []
+                self.addons = []
+
+                for ln in addons: 
+                    jockey = Horses()
+                    self.addons.append(Addon(ln))
+
+                for ln in jockeys: 
+                    jockey = Horses()
+                    self.jockeys.append(jockey.load_dict(ln))
+
+                for ln in titles: 
+                    title = Futam()
+                    self.titles.append(title.load_dict(ln))
+
+                MakePPT(self.jockeys,self.titles,self.addons)
+
+            elif os.path.exists("./csv/jockeys_data.csv") and os.path.exists("./csv/titles_data.csv") and os.path.exists("./csv/addons_data.csv"):
+
+                self.addons  = []
+                self.titles  = []
+                self.jockeys = []
+                
+                with open("./csv/addons_data.csv",'r',encoding="utf-8") as f:
+                    fs = f.readline()
+                    for ln in f: 
+                        #print(ln.strip())
+                        self.addons.append(Addon(ln))
+
+                with open("./csv/titles_data.csv",'r',encoding="utf-8") as f:
+                    fs = f.readline()
+                    for ln in f: 
+                        #print(ln.strip())
+                        self.titles.append(Futam(ln))
+
+                with open("./csv/jockeys_data.csv",'r',encoding="utf-8") as f:
+                    fs = f.readline()
+                    for ln in f: self.jockeys.append(Horses(ln))
+
+                MakePPT(self.jockeys,self.titles,self.addons)
+
+            else:
+                self.load_pdf(mainWindow)
+                self.save_csv(mainWindow)
+                titles = self.titles_widget.to_list_of_dicts()
+                jockeys = self.jockeys_widget.to_list_of_dicts()
+                self.titles = []
+                self.jockeys = []
+
+                for ln in jockeys: 
+                    jockey = Horses()
+                    self.jockeys.append(jockey.load_dict(ln))
+
+                for ln in titles: 
+                    title = Futam()
+                    self.titles.append(title.load_dict(ln))
+
+                MakePPT(self.jockeys,self.titles,self.addons)
+
+            QMessageBox.information(self,"PPT file creation",f"The powerpoint files are created to:\n{Path(__file__).resolve().parent}/ppt/")
+        except Exception as e:
+            QMessageBox.critical(self,"PPT file creation",f"The powerpoint files creation faild:\n{e}")
+
+
+    def Load_previus(self,mainWindow):
+        if os.path.exists("./csv/jockeys_data.csv") and os.path.exists("./csv/titles_data.csv"):
+            self.titles = []
+            self.jockeys = []
+
             with open("./csv/titles_data.csv",'r',encoding="utf-8") as f:
                 fs = f.readline()
                 for ln in f: 
                     #print(ln.strip())
-                    titles.append(Futam(ln))
+                    self.titles.append(Futam(ln))
 
             with open("./csv/jockeys_data.csv",'r',encoding="utf-8") as f:
                 fs = f.readline()
-                for ln in f: jockeys.append(Horses(ln))
+                for ln in f: self.jockeys.append(Horses(ln))
 
-            MakePPT(jockeys,titles)
+            self.titles_widget.load_from_objects(self.titles,self.titles_columns)
+            self.jockeys_widget.load_from_objects(self.jockeys,self.jockeys_columns)
 
-        elif(self.titles_widget.to_list_of_dicts() and self.jockeys_widget.to_list_of_dicts()):
-            titles = self.titles_widget.to_list_of_dicts()
-            jockeys = self.jockeys_widget.to_list_of_dicts()
-            self.titles = []
-            self.jockeys = []
+            self.titles_widget.table.resizeColumnsToContents()
+            self.titles_widget.table.resizeRowsToContents()
 
-            for ln in jockeys: 
-                driver = Horses()
-                self.jockeys.append(driver.load_dict(ln))
+            self.jockeys_widget.table.resizeColumnsToContents()
+            self.jockeys_widget.table.resizeRowsToContents()
 
-            for ln in titles: 
-                title = Futam()
-                self.titles.append(title.load_dict(ln))
+            if(os.path.exists("./csv/addons_data.csv_data.csv")):
+                self.addons = []
+                with open("./csv/addons_data.csv",'r',encoding="utf-8") as f:
+                    fs = f.readline()
+                    for ln in f: self.addons.append(Horses(ln))
 
-            MakePPT(self.jockeys,self.titles)
-        else:
-            self.load_pdf(mainWindow)
-            self.save_csv(mainWindow)
-            titles = self.titles_widget.to_list_of_dicts()
-            jockeys = self.jockeys_widget.to_list_of_dicts()
-            self.titles = []
-            self.jockeys = []
+                self.titles_widget.load_from_objects(self.addons,self.addons_columns)
 
-            for ln in jockeys: 
-                driver = Horses()
-                self.jockeys.append(driver.load_dict(ln))
+                self.addons_widget.table.resizeColumnsToContents()
+                self.addons_widget.table.resizeRowsToContents()
 
-            for ln in titles: 
-                title = Futam()
-                self.titles.append(title.load_dict(ln))
 
-            MakePPT(self.jockeys,self.titles)
+
+
+
+            QMessageBox.information(self,"Previus files loading","The previus data is loaded succesfully")
+
+        else: 
+            futam_path, _ = QFileDialog.getOpenFileName(self, "Open Titles data", "", "CSV files (*.csv);;TEXT files (*.txt);;All files (*)")
+            jockeys_path, _ = QFileDialog.getOpenFileName(self, "Open Jockeys data", "", "CSV files (*.csv);;TEXT files (*.txt);;All files (*)")
+            if os.path.exists(jockeys_path) and os.path.exists(futam_path):
+                self.titles = []
+                self.jockeys = []
+                with open(futam_path,'r',encoding="utf-8") as f:
+                    fs = f.readline()
+                    for ln in f: 
+                        #print(ln.strip())
+                        self.titles.append(Futam(ln))
+
+                with open(jockeys_path,'r',encoding="utf-8") as f:
+                    fs = f.readline()
+                    for ln in f: self.jockeys.append(Horses(ln))
+
+                self.titles_widget.load_from_objects(self.titles,self.titles_columns)
+                #load_from_list_of_obj
+                self.jockeys_widget.load_from_objects(self.jockeys,self.jockeys_columns)
+
+                self.titles_widget.table.resizeColumnsToContents()
+                self.titles_widget.table.resizeRowsToContents()
+
+                self.jockeys_widget.table.resizeColumnsToContents()
+                self.jockeys_widget.table.resizeRowsToContents()
+
+                QMessageBox.information(self,"Previus files loading","The previus data is loaded succesfully")
+            else:
+                QMessageBox.critical(self,"Previus files loading","The some off the files not exists")
+
+    
+    def Add_addon(self, mainWindow):
+        dialog = AddonSel(self)
+        
+        if dialog.exec(): 
+            self.addons = dialog.get_files()
+
+            if self.addons:            
+                self.addons_widget.load_from_objects(self.addons, self.addons_columns)
+                self.addons_widget.table.resizeColumnsToContents()
+                self.addons_widget.table.resizeRowsToContents()   
+
+                QMessageBox.information(self,"Addons load","The Addons loaded successfully.")
+            
+        
+        
+        
+
+
             
     # Optional: override keyPressEvent to insert text to the selected cell when typing
     def keyPressEvent(self, event):
@@ -395,10 +553,7 @@ def main():
     w = MainWindow()
     if is_connected():
         if os.path.exists("./clock.jpeg"):
-            if os.path.exists("./add_macro.xlsm"):
-                w.show()
-            else:
-                QMessageBox.critical(w,"Error","Can't find \"add_macro.xlsm\"")
+            w.show()
         else:
             QMessageBox.critical(w,"Error","Can't find \"clock.jpeg\"")
 
