@@ -6,6 +6,5 @@
 /build
 /dist/
 /modules/__pycache__/
-/dist/ugeto/
 /modules/__pycache__/
 ugeto.spec

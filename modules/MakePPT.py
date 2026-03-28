@@ -1,6 +1,8 @@
 #import xlwings as wx
 
 import os
+import io
+import cv2
 from pptx import Presentation
 from pptx.util import Inches,Pt
 from pptx.dml.color import RGBColor
@@ -8,7 +10,7 @@ from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
 from pptx.oxml.ns import qn, nsdecls
 from pptx.oxml import parse_xml
-
+from pptx.opc.constants import RELATIONSHIP_TYPE as RT
 try:
     from .GetData import Futam, Horses
 except:
@@ -16,10 +18,10 @@ except:
 
 
 class MakePPT:
-    def __init__(self,drivers,titles):
+    def __init__(self,jockeys,titles,addons=[]):
         self.rome_num = ["I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII","XIII","XIV"]
         self.titles = titles
-        self.drivers = drivers
+        self.jockeys = jockeys
 
         if not os.path.isdir("ppt"):
             os.makedirs("ppt")
@@ -50,17 +52,63 @@ class MakePPT:
 
             self.slide5(ppt,slide_layout)
 
+            if addons:
+                for addon in addons: 
+                    self.addon_slide(ppt,slide_layout,addon)
+
+
             file_name = ""
             file_name =f"./ppt/{title.daily}. futam.pptx"
             
             
-            for slide in ppt.slides:
+            for i, slide in enumerate(ppt.slides):
                 self.set_duration(slide,15)
 
-            self.set_looping(ppt)
+            self.enable_looping(ppt)
             ppt.save(file_name)
 
             print(f"{file_name} created!")
+
+    def addon_slide(self,ppt,slide_layout,addon):
+        addonsl = ppt.slides.add_slide(slide_layout)
+        #self.set_slide_duration(slide1, 5) 
+        #slide1.slide_show.transition.duration = 50
+        addonbc = addonsl.background.fill
+        addonbc.solid()
+        addonbc.fore_color.rgb = RGBColor(0, 0, 0)
+
+        if addon and addon.get_type() == "video":
+            left = Inches(0)
+            top = Inches(0)
+            width = Inches(10)
+            height = Inches(7.5)
+
+            cap = cv2.VideoCapture(addon.path)
+            success, frame = cap.read()
+            cap.release()
+
+            poster_stream = None
+            if success:
+                # 2. Convert the image array to a JPEG format in RAM
+                is_success, buffer = cv2.imencode(".jpg", frame)
+                if is_success:
+                    # 3. Wrap the bytes into a file-like object
+                    poster_stream = io.BytesIO(buffer)
+# Add the video
+            movie = addonsl.shapes.add_movie(
+                addon.path, 
+                left, top, width, height, 
+                poster_frame_image=poster_stream,
+                mime_type=addon.type
+            )
+        elif addon and addon.get_type() == "image":
+            left = Inches(1)
+            top = Inches(1)
+            height = Inches(4.5)
+            pic = addonsl.shapes.add_picture(addon.path, left, top, height=height)
+
+
+
 
 
         
@@ -90,7 +138,7 @@ class MakePPT:
         title_frame.word_wrap = True 
         title_frame.vertical_anchor = MSO_ANCHOR.MIDDLE
         
-        text_box = slide1.shapes.add_textbox(Inches(4.93), Inches(1.5), Inches(5.07), Inches(0.7))
+        text_box = slide1.shapes.add_textbox(Inches(4.0), Inches(1.35), Inches(6.0), Inches(1))
         text_frame = text_box.text_frame
         
         text = text_frame.add_paragraph()
@@ -103,11 +151,11 @@ class MakePPT:
         text_frame.word_wrap = True 
         text_frame.vertical_anchor = MSO_ANCHOR.BOTTOM
         
-        data_box = slide1.shapes.add_textbox(Inches(0), Inches(2.53), Inches(3.69), Inches(1.31))
+        data_box = slide1.shapes.add_textbox(Inches(0), Inches(2.65), Inches(4.5), Inches(1.6))
         data_frame = data_box.text_frame
         
         data_text = data_frame.add_paragraph()
-        data_text.text = f"{futam.dist} m\n{futam.start}"
+        data_text.text = f"{futam.dist} m\n{futam.track}"
 
         data_text.font.size = Pt(36)
         data_text.font.bold = True
@@ -117,7 +165,7 @@ class MakePPT:
         data_frame.word_wrap = True 
         data_frame.vertical_anchor = MSO_ANCHOR.BOTTOM
         
-        time_box = slide1.shapes.add_textbox(Inches(5.52), Inches(2.53), Inches(1.51), Inches(1.31))
+        time_box = slide1.shapes.add_textbox(Inches(5.72), Inches(2.65), Inches(1.78), Inches(1.60))
         time_frame = time_box.text_frame
         
         time_text = time_frame.add_paragraph()
@@ -132,9 +180,9 @@ class MakePPT:
         time_frame.vertical_anchor = MSO_ANCHOR.BOTTOM
         
         
-        slide1.shapes.add_picture("clock.jpeg", Inches(7.47), Inches(2.63), Inches(1.17), Inches(1.13))
+        slide1.shapes.add_picture("clock.jpeg", Inches(7.47), Inches(3.0), Inches(1.17), Inches(1.13))
         
-        text1_box = slide1.shapes.add_textbox(Inches(0), Inches(4.94), Inches(3.3), Inches(0.71))
+        text1_box = slide1.shapes.add_textbox(Inches(0), Inches(4.65), Inches(4.0), Inches(1.0))
         text1_frame = text1_box.text_frame
         
         text1 = text1_frame.add_paragraph()
@@ -163,7 +211,7 @@ class MakePPT:
 
         
     def slide2(self,ppt,slide_layout,futam):
-        drivers_list = [driver for driver in self.drivers if driver.Fnum == futam.id]
+        jockeys_list = [jockey for jockey in self.jockeys if jockey.Fnum == futam.id]
 
         slide2 = ppt.slides.add_slide(slide_layout)
         #slide2.slide_show.transition.duration = 50
@@ -171,20 +219,20 @@ class MakePPT:
         slide2bc.solid()
         slide2bc.fore_color.rgb = RGBColor(0, 0, 0)
         
-        horse_box = slide2.shapes.add_textbox(Inches(0), Inches(0), Inches(5), Inches(7.5))
+        horse_box = slide2.shapes.add_textbox(Inches(0), Inches(0), Inches(5.25), Inches(7.5))
         horse_frame = horse_box.text_frame
         
-        driver_box = slide2.shapes.add_textbox(Inches(5), Inches(0), Inches(5), Inches(7.5))
-        driver_frame = driver_box.text_frame
+        jockey_box = slide2.shapes.add_textbox(Inches(5.25), Inches(0), Inches(5.25), Inches(7.5))
+        jockey_frame = jockey_box.text_frame
         
-        for row in drivers_list:
+        for row in jockeys_list:
             
             #horse side
 
             horse = horse_frame.add_paragraph()
             horse.text = f"{row.Hnum}. {row.Hname.upper()}"
             #print(f"{row.horse_number}. {row.horse_name.upper()}")
-            horse.font.size = Pt(32)
+            horse.font.size = Pt(30)
             horse.font.bold = True
             horse.font.color.rgb = RGBColor(255, 229, 121)
             
@@ -192,17 +240,17 @@ class MakePPT:
             horse_frame.word_wrap = True 
             horse_frame.vertical_anchor = MSO_ANCHOR.TOP
             
-            #driver side
+            #Jockey side
             
-            driver = driver_frame.add_paragraph()
-            driver.text = f"{row.DJname}"
-            driver.font.size = Pt(32)
-            driver.font.bold = False
-            driver.font.color.rgb = RGBColor(255, 255, 255)
+            jockey = jockey_frame.add_paragraph()
+            jockey.text = f"{row.DJname}"
+            jockey.font.size = Pt(30)
+            jockey.font.bold = False
+            jockey.font.color.rgb = RGBColor(255, 255, 255)
             
-            driver.alignment = PP_ALIGN.LEFT
-            driver_frame.word_wrap = True 
-            driver_frame.vertical_anchor = MSO_ANCHOR.TOP
+            jockey.alignment = PP_ALIGN.LEFT
+            jockey_frame.word_wrap = True 
+            jockey_frame.vertical_anchor = MSO_ANCHOR.TOP
 
 
     def slide3(self,ppt,slide_layout,futam,hide=False):
@@ -234,7 +282,7 @@ class MakePPT:
             
 
             
-        text_box = slide3.shapes.add_textbox(Inches(0), Inches(1.4), Inches(6.74), Inches(1.72))
+        text_box = slide3.shapes.add_textbox(Inches(0), Inches(1.4), Inches(8.25), Inches(2))
         text_frame = text_box.text_frame
         
         text = text_frame.add_paragraph()
@@ -300,7 +348,7 @@ class MakePPT:
         title_frame.vertical_anchor = MSO_ANCHOR.MIDDLE
             
         
-        text_box = slide4.shapes.add_textbox(Inches(0), Inches(1.4), Inches(10), Inches(1.72))
+        text_box = slide4.shapes.add_textbox(Inches(0), Inches(1.5), Inches(10), Inches(1.72))
         text_frame = text_box.text_frame
         
         text = text_frame.add_paragraph()
@@ -313,11 +361,11 @@ class MakePPT:
         text_frame.word_wrap = True 
         text_frame.vertical_anchor = MSO_ANCHOR.MIDDLE
         
-        dividend_box = slide4.shapes.add_textbox(Inches(0), Inches(3.37), Inches(10), Inches(2.52))
+        dividend_box = slide4.shapes.add_textbox(Inches(0), Inches(3.57), Inches(10), Inches(2.52))
         dividend_frame = dividend_box.text_frame
         
         dividend = dividend_frame.add_paragraph()
-        dividend.text = f"Tét:					1\nHely:					1\nBefutó:    		1\nHbefutó: 		1"
+        dividend.text = f"Tét:{"\t"*6}1\nHely:{"\t"*5}1\nBefutó:{"\t"*4}1\nHbefutó:{"\t"*3}1"
         dividend.font.size = Pt(48)
         dividend.font.bold = True
         dividend.font.color.rgb = RGBColor(255, 255, 255)
@@ -338,7 +386,7 @@ class MakePPT:
         
         title = title_frame.add_paragraph()
         title.text = f"Nem hivatalos\n  befutási sorrend:"
-        title.font.size = Pt(88)
+        title.font.size = Pt(78)
         title.font.bold = True
         title.font.color.rgb = RGBColor(255, 229, 121)
         
@@ -386,37 +434,49 @@ class MakePPT:
             if len(transition.getchildren()) == 0:
                 transition.append(parse_xml('<p:fade xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"/>'))
 
-    def set_looping(self, ppt):
-        """Enable infinite looping slideshow (LibreOffice compatible)"""
-        
-        pres = ppt.element
-        showPr = pres.find(qn('p:showPr'))
+    def enable_looping(self,pres):
+        # 1. Access the Presentation Properties part
+        try:
+            prs_props_part = pres.part.part_related_by(RT.PRES_PROPS)
+        except KeyError:
+            # If the part doesn't exist, this script won't work easily 
+            # (usually it exists in any standard saved PPTX)
+            return
 
-        if showPr is None:
-            showPr = parse_xml(
-                '<p:showPr xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" '
-                'loop="1" useTimings="1"/>'
-            )
-            pres.insert(0, showPr)
-        else:
-            showPr.set("loop", "1")
-            showPr.set("useTimings", "1")
+        # 2. Get the root XML element (p:presentationPr)
+        presentationPr = parse_xml(prs_props_part.blob)
+        
+        # 3. Find or create the <p:showPr> element and set loop="1"
+        # The namespace for 'p' is usually required for the search
+        nsmap = {'p': 'http://schemas.openxmlformats.org/presentationml/2006/main'}
+        show_pr = presentationPr.find('.//p:showPr', namespaces=nsmap)
+        
+        if show_pr is None:
+            # Create it if it's missing (rare, but possible)
+            from lxml import etree
+            show_pr = etree.SubElement(presentationPr, '{%s}showPr' % nsmap['p'])
+        
+        show_pr.set('loop', '1')
+        
+        # 4. Write the modified XML back into the part
+        prs_props_part._blob = etree.tostring(presentationPr)
+        
 
 
 if __name__ == "__main__":
     titles = []
-    drivers = []
+    jockeys = []
     with open("./csv/titles_data.csv",'r',encoding="utf-8") as f:
         fs = f.readline()
         for ln in f: 
             #print(ln.strip())
             titles.append(Futam(ln))
 
-    with open("./csv/drivers_data.csv",'r',encoding="utf-8") as f:
+    with open("./csv/jockeys_data.csv",'r',encoding="utf-8") as f:
         fs = f.readline()
-        for ln in f: drivers.append(Horses(ln))
+        for ln in f: jockeys.append(Horses(ln))
 
-    MakePPT(drivers,titles)
+    MakePPT(jockeys,titles)
     print("Id;Daily;Title;Distance;Start time;Start type;Opinion")
     for i in titles: print(i)
 
