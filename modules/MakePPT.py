@@ -489,8 +489,8 @@ class MakePPT:
             # We also set advClick="0" to prioritize the timer over mouse clicks
             new_xml = (
                 f'<p:transition xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" '
-                f'spd="med" advClick="0" advTm="{ms}">'
-                f"<p:fade/>"
+                f'spd="fast" advClick="0" advTm="{ms}">'
+                f"<p:cut />"
                 f"</p:transition>"
             )
             transition = parse_xml(new_xml)
@@ -503,7 +503,7 @@ class MakePPT:
             if len(transition.getchildren()) == 0:
                 transition.append(
                     parse_xml(
-                        '<p:fade xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"/>'
+                        '<p:cut xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"/>'
                     )
                 )
 

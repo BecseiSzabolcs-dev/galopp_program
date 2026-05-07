@@ -7,7 +7,7 @@ Dependencies:
   pip install PyQt6 pandas python-pptx
 
 Run:
-  python ugeto_ui.py
+  python gallop.py
 
 This file implements a self-contained UI. PDF parsing and advanced PPT layout are left as clear hooks
 so you can plug your existing extraction logic later.
