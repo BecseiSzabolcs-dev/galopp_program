@@ -283,7 +283,10 @@ class MakePPT:
             # horse side
 
             horse = horse_frame.add_paragraph()
-            horse.text = f"{row.Hnum}. {row.Hname.upper()}"
+            if bool(row):
+                horse.text = f"{row.Hnum}. {row.Hname.upper()}"
+            else:
+                horse.text = f"LEJELENTVE!!!"
             # print(f"{row.horse_number}. {row.horse_name.upper()}")
             horse.font.size = Pt(30)
             horse.font.bold = True
