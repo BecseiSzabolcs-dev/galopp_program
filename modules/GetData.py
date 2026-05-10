@@ -82,13 +82,11 @@ class Horses:
     # Horse Number;Horse Name;Horse Distance;Driver Name;Futam Number;is run
     def __init__(self, line=""):
         if line != "":
-            Hnum, Hname, DJname, weight, allowance, Fnum, isRun = line.strip().split(
-                ";"
-            )
+            Hnum, Hname, DJname, weight, allowance, Fnum, isRun = line.strip().split(";")
             self.Hnum = Hnum
             self.Hname = Hname
-            self.weight = weight
-            self.allowance = allowance
+            self.weight = float(weight)
+            self.allowance = float(allowance)
             self.DJname = DJname
             self.Fnum = Fnum
             self.isRun = isRun
@@ -143,6 +141,8 @@ class Horses:
             "Futam id": self.Fnum,
             "Run": self.isRun,
         }
+    def __bool__():
+        return bool(int(self.isRun)) 
 
 
 class GetData:
