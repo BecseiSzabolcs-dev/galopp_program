@@ -103,7 +103,7 @@ class Horses:
             self.isRun = "0"
 
     def load_json(self, data, Fnum):
-        rm_list = ["CZE", "FR", "GB", "GER", "IRE", "SRB", "SVK", "SWE", "POL", ("BIH")]
+        rm_list = ["CZE", "FR", "GB", "GER", "IRE", "SRB", "SVK", "SWE", "POL", "BIH"]
 
         self.Hnum = data["number"]
         self.Hname = " ".join(
