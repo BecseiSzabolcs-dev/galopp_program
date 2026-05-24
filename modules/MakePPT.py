@@ -59,13 +59,14 @@ class MakePPT:
             self.slide1(ppt, slide_layout, title)
             self.slide2(ppt, slide_layout, title)
 
-            if title.id == 0:
+            if int(title.id) == 0:
                 self.slide3(ppt, slide_layout, title)
                 self.slide4(ppt, slide_layout, title, True)
 
             elif self.titles[-1].id == title.id:
                 self.slide3(ppt, slide_layout, self.titles[int(title.id) - 1])
                 self.slide4(ppt, slide_layout, self.titles[int(title.id) - 1])
+                self.emptySlide(ppt, slide_layout)
                 self.slide3(ppt, slide_layout, title, True)
                 self.slide4(ppt, slide_layout, title, True)
 
@@ -73,11 +74,13 @@ class MakePPT:
                 self.slide3(ppt, slide_layout, self.titles[int(title.id) - 1])
                 self.slide4(ppt, slide_layout, self.titles[int(title.id) - 1])
 
+            self.emptySlide(ppt, slide_layout)
             self.slide5(ppt, slide_layout)
 
             if addons:
                 for addon in addons:
-                    self.addon_slide(ppt, slide_layout, addon)
+                    if addon.id != "":
+                        self.addon_slide(ppt, slide_layout, addon)
 
             file_name = (
                 f"{location}/{title.daily}. futam.pptx"
@@ -431,7 +434,7 @@ class MakePPT:
         dividend_frame = dividend_box.text_frame
 
         dividend = dividend_frame.add_paragraph()
-        dividend.text = f"Tét:{'\t' * 6}1\nHely:{'\t' * 5}1\nBefutó:{'\t' * 4}1\nHbefutó:{'\t' * 3}1"
+        dividend.text = f"Tét:{'\t' * 6}1\nHely:{'\t' * 6}1\nBefutó:{'\t' * 4}1\nHbefutó:{'\t' * 4}1"
         dividend.font.size = Pt(48)
         dividend.font.bold = True
         dividend.font.color.rgb = RGBColor(255, 255, 255)
@@ -476,6 +479,13 @@ class MakePPT:
         text.alignment = PP_ALIGN.CENTER
         text_frame.word_wrap = True
         text_frame.vertical_anchor = MSO_ANCHOR.MIDDLE
+
+    def emptySlide(self, ppt, slide_layout):
+        empty_slide = ppt.slides.add_slide(slide_layout)
+        # slide5.slide_show.transition.duration = 50
+        empty_slidebc = empty_slide.background.fill
+        empty_slidebc.solid()
+        empty_slidebc.fore_color.rgb = RGBColor(0, 0, 0)
 
     def set_duration(self, slide, seconds):
         """Sets the 'Advance After' time with strict LibreOffice compatibility."""
