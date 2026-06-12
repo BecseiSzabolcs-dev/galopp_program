@@ -40,6 +40,7 @@ class MakePPT:
         ]
         self.titles = titles
         self.jockeys = jockeys
+        self.track = 11
 
         if location == "" and not os.path.isdir("ppt"):
             os.makedirs("ppt")
@@ -187,7 +188,7 @@ class MakePPT:
         text_frame = text_box.text_frame
 
         text = text_frame.add_paragraph()
-        text.text = "Pálya: 11 Kincsem Park"
+        text.text = f"Pálya: {self.track} Kincsem Park"
         text.font.size = Pt(36)
         text.font.bold = True
         text.font.color.rgb = RGBColor(255, 229, 121)
@@ -344,7 +345,7 @@ class MakePPT:
         text_frame = text_box.text_frame
 
         text = text_frame.add_paragraph()
-        text.text = "Pálya: 10 Kincsem Park\nBefutási sorrend:"
+        text.text = f"Pálya: {self.track} Kincsem Park\nBefutási sorrend:"
         text.font.size = Pt(48)
         text.font.bold = True
         text.font.color.rgb = RGBColor(255, 229, 121)
@@ -419,7 +420,7 @@ class MakePPT:
         text_frame = text_box.text_frame
 
         text = text_frame.add_paragraph()
-        text.text = "Pálya: 10 Kincsem Park\nBefutási sorrend:"
+        text.text = f"Pálya: {self.track} Kincsem Park\nBefutási sorrend:"
         text.font.size = Pt(48)
         text.font.bold = True
         text.font.color.rgb = RGBColor(255, 229, 121)

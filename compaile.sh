@@ -10,7 +10,7 @@
 source "./.venv/bin/activate"
 
 # Install requirements.txt
-./.venv/bin/pip install -r "./requirements.txt"
+./.venv/bin/pip install -r "./requirments.txt"
 
 # Run PyInstaller on your script
 ./.venv/bin/python -m PyInstaller --windowed --add-data="./clock.jpeg:." --onefile "./gallop.py"

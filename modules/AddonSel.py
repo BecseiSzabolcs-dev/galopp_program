@@ -8,7 +8,7 @@ class Addon:
     def __init__(self, data):
         if isinstance(data, str):
             try:
-                id, name, ftype, path = data.split(";")
+                id, name, ftype, path = data.strip().split(";")
 
                 self.id = id
                 self.name = name
