@@ -11,4 +11,4 @@
 & ".\.venv\Scripts\Activate.ps1"
 
 # Run PyInstaller on your script
-& ".\.venv\Scripts\python.exe" -m PyInstaller --windowed --onefile ".\ugeto.py"
+& ".\.venv\Scripts\python.exe" -m PyInstaller --windowed --onefile ".\gallop.py"
