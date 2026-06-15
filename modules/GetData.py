@@ -101,11 +101,23 @@ class Horses:
             self.isRun = "0"
 
     def load_json(self, data, Fnum):
-        rm_list = ["CZE", "FR", "GB", "GER", "IRE", "SRB", "SVK", "SWE", "POL", "BIH"]
+        rm_list = [
+            "CZE",
+            "FR",
+            "GB",
+            "GER",
+            "IRE",
+            "SRB",
+            "SVK",
+            "SWE",
+            "POL",
+            "BIH",
+            "FV",
+        ]
 
         self.Hnum = data["number"]
         self.Hname = " ".join(
-            [w for w in data["name"].split() if w.strip("()") not in rm_list]
+            [w for w in data["name"].split() if w.strip("()").upper() not in rm_list]
         ).strip()
         # self.dist   = data['distance']
         self.weight = float(data["weight"])
