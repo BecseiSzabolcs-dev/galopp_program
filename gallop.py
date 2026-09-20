@@ -333,6 +333,7 @@ class MainWindow(QMainWindow):
 
     def save_csv(self, mainWindow):
         # Ensure directories exist
+        print("Start saving files...")
         try:
             CSV_DIR.mkdir(exist_ok=True)
             if (
@@ -361,7 +362,6 @@ class MainWindow(QMainWindow):
                 self.titles.append(title.load_dict(ln))
 
             for ln in addons:
-                print(ln)
                 self.addons.append(Addon(ln))
 
             title_header = ";".join(self.titles_header) + "\n"
@@ -373,17 +373,22 @@ class MainWindow(QMainWindow):
                 f.write(title_header)
                 for ln in self.titles:
                     f.write(str(ln) + "\n")
+                print("Titles data saved.")
 
             with open("./csv/jockeys_data.csv", "w", encoding="utf-8") as f:
                 f.write(jockey_header)
                 for ln in self.jockeys:
                     f.write(str(ln) + "\n")
+
+                print("Jockeys data saved.")
             if addons != []:
                 with open("./csv/addons_data.csv", "w", encoding="utf-8") as f:
                     f.write(addons_header)
                     for ln in self.addons:
                         f.write(str(ln) + "\n")
 
+                    print("Addons data saved.")
+            print("The CSV files are saved.")
             QMessageBox.information(self, "CSV fájlok", "A CSV fájlok lementése kész")
 
         except (ValueError, TypeError) as e:
@@ -475,6 +480,8 @@ class MainWindow(QMainWindow):
             )
 
     def Load_previus(self, mainWindow):
+        print("Loading previus data...")
+        success = False
         if os.path.exists("./csv/jockeys_data.csv") and os.path.exists(
             "./csv/titles_data.csv"
         ):
@@ -486,11 +493,14 @@ class MainWindow(QMainWindow):
                 for ln in f:
                     # print(ln.strip())
                     self.titles.append(Futam(ln))
+                print("Titles data Loaded.")
 
             with open("./csv/jockeys_data.csv", "r", encoding="utf-8") as f:
                 fs = f.readline()
                 for ln in f:
                     self.jockeys.append(Horses(ln))
+
+                print("Jockeys data Loaded.")
 
             self.titles_widget.load_from_objects(self.titles, self.titles_columns)
             self.jockeys_widget.load_from_objects(self.jockeys, self.jockeys_columns)
@@ -501,14 +511,16 @@ class MainWindow(QMainWindow):
             self.jockeys_widget.table.resizeColumnsToContents()
             self.jockeys_widget.table.resizeRowsToContents()
 
-            if os.path.exists("./csv/addons_data.csv_data.csv"):
+            if os.path.exists("./csv/addons_data.csv"):
                 self.addons = []
                 with open("./csv/addons_data.csv", "r", encoding="utf-8") as f:
                     fs = f.readline()
                     for ln in f:
-                        self.addons.append(Horses(ln))
+                        self.addons.append(Addon(ln))
 
-                self.titles_widget.load_from_objects(self.addons, self.addons_columns)
+                print("Addons data Loaded.")
+
+                self.addons_widget.load_from_objects(self.addons, self.addons_columns)
 
                 self.addons_widget.table.resizeColumnsToContents()
                 self.addons_widget.table.resizeRowsToContents()
@@ -516,6 +528,7 @@ class MainWindow(QMainWindow):
             QMessageBox.information(
                 self, "Previus files loading", "The previus data is loaded succesfully"
             )
+            success = True
 
         else:
             futam_path, _ = QFileDialog.getOpenFileName(
@@ -539,10 +552,14 @@ class MainWindow(QMainWindow):
                         # print(ln.strip())
                         self.titles.append(Futam(ln))
 
+                    print("Titles data Loaded.")
+
                 with open(jockeys_path, "r", encoding="utf-8") as f:
                     fs = f.readline()
                     for ln in f:
                         self.jockeys.append(Horses(ln))
+
+                    print("Jockeys data Loaded.")
 
                 self.titles_widget.load_from_objects(self.titles, self.titles_columns)
                 # load_from_list_of_obj
@@ -561,10 +578,17 @@ class MainWindow(QMainWindow):
                     "Previus files loading",
                     "The previus data is loaded succesfully",
                 )
+
+                success = True
             else:
                 QMessageBox.critical(
                     self, "Previus files loading", "The some off the files not exists"
                 )
+
+        if success:
+            print("Previus data successfully loaded.")
+        else:
+            print("Previus data loading faild.")
 
     def Add_addon(self, mainWindow):
         dialog = AddonSel(self)
