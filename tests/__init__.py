@@ -1,0 +1,1 @@
+from .pkgs_tests import PKG_TEST

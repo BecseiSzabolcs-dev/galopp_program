@@ -2,7 +2,8 @@
 # winget install Python.Python.3.14
 
 # Install python virtual envairoment
-# python -m venv .venv
+# py -3.14 venv .venv
+
 
 # Install requirements.txt
 & ".\.venv\Scripts\pip.exe" install -r "./requirements.txt"

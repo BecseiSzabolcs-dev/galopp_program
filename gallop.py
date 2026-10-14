@@ -17,6 +17,14 @@ import os
 import sys
 from pathlib import Path
 
+import tests.pkgs_tests as pkg_test
+
+try:
+    pkg_test.PKG_TEST()
+except Exception as e:
+    print(f"Error checking/installing packages: {e}")
+    sys.exit(1)
+
 import requests
 from PyQt6.QtCore import QSortFilterProxyModel, Qt
 from PyQt6.QtGui import QAction, QKeySequence, QStandardItem, QStandardItemModel
