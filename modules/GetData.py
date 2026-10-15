@@ -153,7 +153,7 @@ class Horses:
             "Futam id": self.Fnum,
             "Run": self.isRun,
         }
-    def __bool__():
+    def __bool__(self):
         return bool(int(self.isRun)) 
 
 
